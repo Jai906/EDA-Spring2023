@@ -63,14 +63,14 @@ vignette("dplyr")
 Filtering allows us to choose certain rows (observations) in our dataset.
 
 Here are the relevant commands used in the `filter` function. Add some notes to designate what these commands mean. 
-`==`
-`!=`
+`==` # specific values
+`!=` # values are different
 `<`
 `<=`
 `>`
 `>=`
-`&`
-`|`
+`&` # Both conditions true
+`|` # one or the other is true
 
 ```{r}
 class(NTL.phys.data$lakeid)
@@ -93,15 +93,23 @@ dim(NTL.phys.data.surface3)
 
 # Choose multiple conditions to filter
 summary(NTL.phys.data$lakename)
+
+# Selecting for Paul Lake and Peter Lake
+# Way 1 - include lakes with names Paul Lake or Peter Lake
 NTL.phys.data.PeterPaul1 <- filter(NTL.phys.data, lakename == "Paul Lake" | lakename == "Peter Lake")
+
+# Way 2 - exclude all other lakes
 NTL.phys.data.PeterPaul2 <- filter(NTL.phys.data, lakename != "Central Long Lake" & 
                                      lakename != "Crampton Lake" & lakename != "East Long Lake" &
                                      lakename != "Hummingbird Lake" & lakename != "Tuesday Lake" &
                                      lakename != "Ward Lake" & lakename != "West Long Lake")
+# Way 3
 NTL.phys.data.PeterPaul3 <- filter(NTL.phys.data, lakename %in% c("Paul Lake", "Peter Lake"))
 
 # Choose a range of conditions of a numeric or integer variable
 summary(NTL.phys.data$daynum)
+
+# 152 represent June 1st 305 represents nov 1st
 NTL.phys.data.JunethruOctober1 <- filter(NTL.phys.data, daynum > 151 & daynum < 305)
 NTL.phys.data.JunethruOctober2 <- filter(NTL.phys.data, daynum > 151, daynum < 305)
 NTL.phys.data.JunethruOctober3 <- filter(NTL.phys.data, daynum >= 152 & daynum <= 304)
@@ -126,6 +134,7 @@ Question: Why don't we filter using row numbers?
 Arranging allows us to change the order of rows in our dataset. By default, the arrange function will arrange rows in ascending order.
 
 ```{r}
+# arrange is ascending order
 NTL.phys.data.depth.ascending <- arrange(NTL.phys.data, depth)
 NTL.phys.data.depth.descending <- arrange(NTL.phys.data, desc(depth))
 
@@ -164,7 +173,11 @@ NTL.phys.data.PeterPaul1 <- mutate(NTL.phys.data.PeterPaul1, month = month(sampl
 NTL.phys.data.PeterPaul1 <- select(NTL.phys.data.PeterPaul1, lakeid:daynum, month, sampledate:comments)
 
 # find out the start and end dates of the dataset
+# interval has specified start and end dates
+# Works if data is organized by date
 interval(NTL.phys.data.PeterPaul1$sampledate[1], NTL.phys.data.PeterPaul1$sampledate[21613])
+
+# When not organized by date - better approach/works for any sized dataset
 interval(first(NTL.phys.data.PeterPaul1$sampledate), last(NTL.phys.data.PeterPaul1$sampledate))
 ```
 
@@ -196,4 +209,5 @@ write.csv(NTL.phys.data.PeterPaul1, row.names = FALSE, file = "./Data/Processed/
 
 When we wrangle a raw dataset into a processed dataset, we create a code file that contains only the wrangling code. We then save the processed dataset as a new spreadsheet and then create a separate code file to analyze and visualize the dataset. Why do we keep the wrangling code separate from the analysis code?
 
+Don't want to do everything in the same file. Becomes very long and can get lost in the process
 
