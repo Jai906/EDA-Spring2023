@@ -193,12 +193,42 @@ write.csv(EPAair_PM_NC2019_processed, row.names = FALSE,
 EPAair_combined <- rbind(EPAair_NC2018_processed, EPAair_NC2019_processed, EPAair_PM_NC2018_processed, EPAair_PM_NC2019_processed)
 
 #8 
+#______Include all sites that the four data frames have in common______#
+EPAair_combined_common <- EPAair_combined %>%
+  filter(Site.Name == "Linville Falls" | Site.Name == "Durham Armory" | Site.Name == "Leggett" | Site.Name =="Hattie Avenue" | Site.Name == "Clemmons Middle" | Site.Name == "Mendenhall School" | Site.Name == "Frying Pan Mountain" | Site.Name =="West Johnston Co." | Site.Name == "Garinger High School" | Site.Name == "Castle Hayne" | Site.Name == "Pitt Agri. Center" | Site.Name == "Bryson City" | Site.Name == "Millbrook School") 
+
+
+#_______Using split-apply-combine to generate daily means_________#
+EPAair_combined_means <- 
+  EPAair_combined_common %>%
+  group_by(Date, Site.Name, AQS_PARAMETER_DESC, COUNTY) %>%
+  filter(!is.na(DAILY_AQI_VALUE) & !is.na(SITE_LATITUDE) & !is.na(SITE_LONGITUDE)) %>% #Removing NAs
+  summarise(meanAQI = mean(DAILY_AQI_VALUE), 
+            meanlatitude = mean(SITE_LATITUDE), 
+            meanlongitude = mean(SITE_LONGITUDE)) # output is datafram with desired means
+
+#_______Add month and year column to dataset_______#
+EPAair_combined_means_expand <- mutate(EPAair_combined_means, Month = month(Date), Year = month(Date))
+dim(EPAair_combined_means_expand) # output is 14752 of 9 variables
 
 #9
 
+#_______Spread your datasets such that AQI values for ozone and PM2.5 are in separate columns______#
+EPAair_combined_means_expand2 <-  pivot_wider(EPAair_combined_means_expand,
+            names_from = AQS_PARAMETER_DESC,
+            values_from = meanAQI)
+
 #10
 
+#______Call up the dimensions of your new tidy dataset______#
+dim(EPAair_combined_means_expand2)
+
 #11
+
+#_____Save processed EPAair combined dataset______#
+write.csv(EPAair_combined_means_expand2, row.names = FALSE, 
+          file = "./Data/Processed/EPAair_O3_PM25_NC1819_Processed.csv")
+
 
 ```
 
@@ -213,12 +243,22 @@ EPAair_combined <- rbind(EPAair_NC2018_processed, EPAair_NC2019_processed, EPAai
 
 #12
 
+#_______Using split-apply-combine to generate summary data frame_________#
+EPAair_combined_means_expand_sum <- 
+  EPAair_combined_means_expand2 %>%
+  group_by(Site.Name, Month, Year) %>%
+  summarise(meanOzone = mean(Ozone), 
+            meanPM = mean(PM2.5)) %>%
+  drop_na(ozone)
 
 #13
 
+dim(EPAair_combined_means_expand_sum)
 
 ```
 
 14. Why did we use the function `drop_na` rather than `na.omit`?
 
-> Answer: 
+> Answer:
+
+'drop_na' removes the rows with an 'NA' values. 'na.omit' does not include 'NA' values in calculations but does not remove 'NA's from dataframe; sometimes does not work with pipe function.
