@@ -1,6 +1,6 @@
 ---
 title: "Assignment 5: Data Visualization"
-author: "Student Name"
+author: "Jaleesia Amos"
 date: "Spring 2023"
 output: pdf_document
 geometry: margin=2.54cm
@@ -33,7 +33,31 @@ This exercise accompanies the lessons in Environmental Data Analytics on Data Vi
 ```{r initialize project}
 #1 
 
+#----Load packages into session & download if not already installed----#
+pacman::p_load(tidyverse, lubridate, here, cowplot)
+
+#----Check working directory----#
+getwd()
+
+#----Read in dataset 1: Nutrients dataset-----#
+PeterPaul_processed <- read.csv("./Data/Processed/NTL-LTER_Lake_Chemistry_Nutrients_PeterPaul_Processed.csv", stringsAsFactors = TRUE)
+
+#----Read in dataset 2: Litter dataset------#
+litter_processed <- read.csv("./Data/Processed/NEON_NIWO_Litter_mass_trap_Processed.csv", stringsAsFactors = TRUE)
+
 #2 
+
+#----Checking structure of Nutrients for date format------#
+str(PeterPaul_processed)
+
+#----Checking structure of Litter for date format------#
+str(litter_processed)
+
+#_____Date Conversion: Nutrients dataset______#
+PeterPaul_processed$sampledate <- ymd(PeterPaul_processed$sampledate)
+
+#_____Date Conversion: Litter dataset______#
+litter_processed$collectDate <- ymd(litter_processed$collectDate)
 
 ```
 ## Define your theme
@@ -46,6 +70,14 @@ This exercise accompanies the lessons in Environmental Data Analytics on Data Vi
 
 ```{r build plot theme}
 #3
+#----Custom theme: change title, axis title, and legend----#
+jatheme <- theme_bw(base_size = 12) + 
+  theme(plot.title = element_text(face ="bold", hjust = 0.5),
+        axis.title = element_text(face = "bold"), 
+        legend.position = "right")
+
+#-----Set theme for environment-----#
+theme_set(jatheme)
 
 ```
 
@@ -56,7 +88,27 @@ For numbers 4-7, create ggplot graphs and adjust aesthetics to follow best pract
 
 ```{r plot total P vs PO4}
 #4 
+#----Couldn't create line of best of fit through geom_line or geom_abline----#
+LinMod <- lm(tp_ug~po4, data = PeterPaul_processed)
 
+#----get intercept and slope value
+coeff <- coefficients(LinMod)
+intercept <- coeff[1]
+slope <- coeff[2]
+
+#----Create plot---#
+ggplot(data = PeterPaul_processed) +
+  geom_point(aes(x = po4, y = tp_ug, color = lakename)) +
+#----Change axis title---#
+  xlab("Phosphate") +
+  ylab("Total Phosphorus") +
+#----Add plot title----#  
+  ggtitle("Total phosphorus vs phosphate for Paul and Peter Lake") +
+#----Adjust axis scale----#
+  xlim(0, 50) +
+  geom_abline(intercept = intercept, slope = slope, color = "black")
+
+ 
 ```
 
 
@@ -66,12 +118,42 @@ Tip: R has a build in variable called `month.abb` that returns a list of months;
 
 ```{r Create boxplots}
 #5 
+#-----5a. boxplot of temperature------#
+tempPlot <- ggplot(data = PeterPaul_processed)  +
+  geom_boxplot(aes(x = as.factor(month), y = temperature_C, 
+                   color = lakename)) 
+tempPlot
 
+#-----5b. boxplot of TP------#
+tpPlot <- ggplot(data = PeterPaul_processed) +
+  geom_boxplot(aes(x = as.factor(month), y = tp_ug, 
+                   color = lakename)) 
+tpPlot
+
+#-----5c. boxplot of TN------#
+tnPlot <- ggplot(data = PeterPaul_processed) +
+  geom_boxplot(aes(x = as.factor(month), y = tn_ug, 
+                   color = lakename)) 
+tnPlot
+
+#------Remove legends from individual plots-----#
+prow <- plot_grid(tempPlot + theme(legend.position = "none"),
+                  tpPlot + theme(legend.position = "none"),
+                  tnPlot + theme(legend.position = "none"),
+                  nrow = 3,
+                  axis = "b",
+                  align = "v")
+
+#------Get legend from one plot------#
+legend <- get_legend(tempPlot)
+
+#------Combine plots into one plot-----#
+plot_grid(prow, legend)
 ```
 
 Question: What do you observe about the variables of interest over seasons and between lakes? 
 
-> Answer: 
+> Answer: There is a positive correlation between the temperature and the concentration levels of tp and tn. During the summer when temperatures are higher, tp and tn concentrations are also higher. Between Paul and Peter Lake, the tp and tn concentrations are higher in Peter lake. The temperatures between Paul and Peter Lake are nearly the same.
 
 6. [Niwot Ridge] Plot a subset of the litter dataset by displaying only the "Needles" functional group. Plot the dry mass of needle litter by date and separate by NLCD class with a color aesthetic. (no need to adjust the name of each land use)
 
@@ -79,12 +161,20 @@ Question: What do you observe about the variables of interest over seasons and b
 
 ```{r Plot litter}
 #6
-
+#-----Plot by functional group-----#
+ggplot(data = litter_processed %>%
+         filter(functionalGroup == "Needles")) +
+         geom_point(aes(x = collectDate, y = dryMass, color = nlcdClass, fill = nlcdClass))
 
 #7
-
+#-----Create same plot with facets-----#
+ggplot(data = litter_processed %>%
+         filter(functionalGroup == "Needles")) +
+         geom_point(aes(x = collectDate, y = dryMass, 
+                      color = collectDate)) + 
+                      facet_wrap(vars(nlcdClass))
 
 ```
 Question: Which of these plots (6 vs. 7) do you think is more effective, and why? 
 
-> Answer:
+> Answer: Plot 7 is more effective in this case, because the facet feature allows us to more clearly distinguish between the dry mass of needles by nlcdClass. For example, it is easier to determine that shrub scrub is produces the least amount needles across all years that data were collected.
