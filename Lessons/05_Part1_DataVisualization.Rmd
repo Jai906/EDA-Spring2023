@@ -20,7 +20,7 @@ Effective data visualization depends on purposeful choices about graph types. Th
 
 ```{r, message = FALSE, warning = FALSE}
 library(tidyverse);library(lubridate);library(here)
-library(ggridges)
+library(ggridges) #Build ridge plot, look at distribution of variable over time
 
 here()
 
@@ -30,6 +30,7 @@ PeterPaul.chem.nutrients.gathered <-
   read.csv(here("Data/Processed_KEY/NTL-LTER_Lake_Nutrients_PeterPaulGathered_Processed.csv"), stringsAsFactors = TRUE)
 EPAair <- read.csv(here("Data/Processed_KEY/EPAair_O3_PM25_NC1819_Processed.csv"), stringsAsFactors = TRUE)
 
+# Change dates into date objects
 EPAair$Date <- ymd(EPAair$Date)
 PeterPaul.chem.nutrients$sampledate <- ymd(PeterPaul.chem.nutrients$sampledate)
 PeterPaul.chem.nutrients.gathered$sampledate <- ymd(PeterPaul.chem.nutrients.gathered$sampledate)
@@ -63,7 +64,7 @@ Here are some commonly used layers for plotting in ggplot:
 * geom_line
 * geom_area
 * geom_abline (plus geom_hline and geom_vline)
-* geom_text
+* geom_text # add text to plots
 
 ### Aesthetics
 Here are some commonly used aesthetic types that can be manipulated in ggplot: 
@@ -87,7 +88,7 @@ print(O3plot)
 
 # Fix this code
 O3plot2 <- ggplot(EPAair) +
-  geom_point(aes(x = Date, y = Ozone, color = "blue"))
+  geom_point(aes(x = Date, y = Ozone), color = "blue")
 print(O3plot2)
 
 # Add additional variables
@@ -174,7 +175,7 @@ print(Nutrientplot3)
 Nutrientplot4 <-
   ggplot(PeterPaul.chem.nutrients.gathered, aes(x = lakename, y = concentration)) +
   geom_dotplot(aes(color = nutrient, fill = nutrient), binaxis = "y", binwidth = 1, 
-               stackdir = "center", position = "dodge", dotsize = 2) #
+               stackdir = "center", position = "dodge", dotsize = 2) 
 print(Nutrientplot4)
 
 # Violin plot

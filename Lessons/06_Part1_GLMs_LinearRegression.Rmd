@@ -118,9 +118,12 @@ print(irradiancebydepth)
 Given the distribution of irradiance values, we don't have a linear relationship between x and y in this case. Let's try log-transforming the irradiance values. Note we also removing the observations that seems to ba an outlier.
 
 ```{r, fig.height = 3, fig.width = 4}
+#---Remove zeros inorder to take log and remove outliers----#
 PeterPaul.chem.nutrients <- filter(PeterPaul.chem.nutrients, 
                                    irradianceWater != 0 & irradianceWater < 5000)
-irradiance.regression2 <- lm(data = PeterPaul.chem.nutrients, log(irradianceWater) ~ depth)
+#----log irradiance values----#
+irradiance.regression2 <- lm(data = PeterPaul.chem.nutrients, 
+                             log(irradianceWater) ~ depth)
 summary(irradiance.regression2)
 
 par(mfrow = c(2,2), mar=c(4,4,4,4))
@@ -171,8 +174,9 @@ par(mfrow = c(1,1))
 We can also make exploratory plots of several continuous data points to determine possible relationships, as well as covariance among explanatory variables. 
 
 ```{r, fig.height = 3, fig.width = 4}
-#install.packages("corrplot")
+install.packages("corrplot")
 library(corrplot)
+#---Create new dataset---#
 PeterPaulnutrients <- 
   PeterPaul.chem.nutrients %>%
   select(tn_ug:po4) %>%
