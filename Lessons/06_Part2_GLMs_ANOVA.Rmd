@@ -16,7 +16,7 @@ editor_options:
 ```{r, message = FALSE}
 
 library(tidyverse)
-#install.packages("agricolae")
+install.packages("agricolae")
 library(agricolae)   #you may need to install/update package "htmltools" before installing and loading agricolae
 library(here)
 here()
@@ -95,7 +95,7 @@ plot(Litter.Totals.anova2)
 TukeyHSD(Litter.Totals.anova)
 
 # Extract groupings for pairwise relationships
-Litter.Totals.groups <- HSD.test(Litter.Totals.anova, "plotID", group = TRUE)
+Litter.Totals.groups <-HSD.test(Litter.Totals.anova, "plotID", group = TRUE)
 Litter.Totals.groups
 
 # Graph the results
@@ -112,7 +112,7 @@ print(Litter.Totals.plot)
 
 What information does the output give us? How might we report this information in a report?
 
-> 
+> Reorder sites
 
 ## TWO-WAY ANOVA
 
@@ -159,7 +159,7 @@ TukeyHSD(Litter.anova.2way3)
 
 Litter.interaction <- with(Litter, interaction(functionalGroup, nlcdClass))
 
-#Litter.test <- cbind(Litter,Litter.interaction)
+Litter.test <- cbind(Litter,Litter.interaction)
 
 Litter.anova.2way5 <- aov(data = Litter, dryMass ~ Litter.interaction)
 
