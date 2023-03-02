@@ -1,6 +1,6 @@
 ---
 title: "Assignment 6: GLMs (Linear Regressios, ANOVA, & t-tests)"
-author: "Student Name"
+author: "Jaleesia Amos"
 date: "Spring 2023"
 output: pdf_document
 geometry: margin=2.54cm
@@ -28,8 +28,37 @@ This exercise accompanies the lessons in Environmental Data Analytics on general
 ```{r setup2}
 #1
 
+#--------Check working directory---------#
+getwd()
+
+#--------Checking which packages are included with tidyverse---------#
+tidyverse_packages()
+#-------Loading needed packages---------#
+pacman::p_load(tidyverse, agricolae, here)
+
+#--------Read in dataset---------#
+lake <- read.csv(here("Data/Raw/NTL-LTER_Lake_ChemistryPhysics_Raw.csv"), stringsAsFactors = TRUE)
+
+#--------------Change date into date object---------------#
+#___Checking structure of data set____#
+str(lake)
+
+#___Change sampledate column to date object___#
+lake$sampledate <- mdy(lake$sampledate)
+
+#___Change year4 column to date object___#
+lake$year4 <- year(lake$sampledate)
+
 
 #2
+#----Create custom theme----#
+jatheme <- theme_bw(base_size = 12) + 
+  theme(plot.title = element_text(face ="bold", hjust = 0.5),
+        axis.title = element_text(face = "bold"), 
+        legend.position = "right")
+
+#-----Set theme for environment-----#
+theme_set(jatheme)
 
 
 ```
@@ -39,8 +68,8 @@ Our first research question is: Does mean lake temperature recorded during July 
 
 3. State the null and alternative hypotheses for this question:
 > Answer:
-H0: 
-Ha: 
+H0: The temperature is the same with depth across all lakes for July.
+Ha: At least one lake's temperature does vary with depth for the month of July.
 
 
 4.  Wrangle your NTL-LTER dataset with a pipe function so that the records meet the following criteria: 
@@ -52,7 +81,11 @@ Ha:
 
 ```{r scatterplot}
 #4
-
+#-----Wrangling dataset------#
+lake_processed <- lake %>%
+   filter(month(sampledate == 7)) %>% #only dates in July
+   select(lakename:daynum, depth, temperature_C)
+  
 
 #5
 
