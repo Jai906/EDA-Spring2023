@@ -69,6 +69,7 @@ Ha: mu < 50
 summary(EPAair$Ozone) #mean = 40.88 and median = 40
 length(EPAair$Ozone) #8976 observations
 
+#----Reject null based on p-vaule from t.test----#
 O3.onesample <- t.test(EPAair$Ozone, mu = 50, alternative = "less")
 O3.onesample
 
@@ -80,6 +81,7 @@ Ozone.plot <- ggplot(EPAair, aes(x = Ozone)) +
 print(Ozone.plot)
 
 # Format as a GLM
+#----- ~1 means there is no explanatory variable----#
 O3.onesample2 <- lm(Ozone ~ 1, EPAair)
 O3.onesample2
 ```
@@ -97,6 +99,7 @@ Are Ozone levels different between 2018 and 2019?
 
 ```{r}
 #First let's look at the data
+#---Generating frequency plot by year---#
 ggplot(EPAair, aes(x = Ozone, color = as.factor(Year))) +
   geom_freqpoly()
 
@@ -106,7 +109,7 @@ ggplot(EPAair, aes(x = Ozone, color = as.factor(Year))) +
 O3.twosample <- t.test(EPAair$Ozone ~ EPAair$Year)
 O3.twosample
 
-# Format as a GLM
+# Format as a GLM - asking if year is a predictor of ozone levels
 O3.twosample2 <- lm(EPAair$Ozone ~ EPAair$Year)
 summary(O3.twosample2)
 
