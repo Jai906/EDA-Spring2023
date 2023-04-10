@@ -169,7 +169,7 @@ This begins by setting the parameters of the page we'll be scraping to variables
 ```{r streamline.the.process}
 #Construct the scraping web address, i.e. its URL
 the_base_url <- 'https://www.ncwater.org/WUDC/app/WWATR/report/view'
-the_facility <- '0004-0001'
+the_facility <- '0218-0238'
 the_year <- 2015
 the_scrape_url <- paste0(the_base_url, '/', the_facility, '/', the_year)
 print(the_scrape_url)
@@ -202,7 +202,7 @@ df_withdrawals <- data.frame("Month" = rep(1:12),
 ggplot(df_withdrawals,aes(x=Date,y=Avg_Withdrawals_mgd)) + 
   geom_line() + 
   geom_smooth(method="loess",se=FALSE) +
-  labs(title = paste("2020 Water usage data for",the_registrant),
+  labs(title = paste(the_year, "Water usage data for",the_registrant),
        subtitle = the_facility_name,
        y="Withdrawal (mgd)",
        x="Date")
@@ -245,7 +245,7 @@ scrape.it <- function(the_year, the_facility){
            Date = my(paste(Month,"-",Year)))
   
   #Pause for a moment - scraping etiquette
-  #Sys.sleep(1) #uncomment this if you are doing bulk scraping!
+  #Sys.sleep(1) #uncomment this if you are doing bulk scraping! #tells R to wait one second,runs code more slowly;5 seconds is better
   
   #Return the dataframe
   return(df_withdrawals)
@@ -266,12 +266,12 @@ R can iterate using either "lapply" or Purrrs' "map" functions.
 the_years = rep(2018:2020)
 my_facility = '0004-0001'
 
-#Use lapply to apply the scrape function
+#Use lapply to apply the scrape function; one variable is static= the facilicty
 the_dfs <- lapply(X = the_years,
                   FUN = scrape.it,
                   the_facility=my_facility)
 
-#OR, use purrr's map function
+#OR, use purrr's map function; same as lapply
 the_dfs <- map(the_years,scrape.it,the_facility=my_facility)
 
 #Conflate the returned dataframes into a single dataframe
@@ -280,11 +280,7 @@ the_df <- bind_rows(the_dfs)
 #Plot, because it's fun and rewarding
 ggplot(the_df,aes(x=Date,y=Avg_Withdrawals_mgd)) + 
   geom_line() + 
-  geom_smooth(method="loess",se=FALSE) +
-  labs(title = paste("2020 Water usage data for",the_registrant),
-       subtitle = the_facility_name,
-       y="Withdrawal (mgd)",
-       x="Date")
+  geom_smooth(method="loess",se=FALSE)
 ```
 
 # Part 3. Web Crawling
@@ -306,7 +302,7 @@ the_main_website <- read_html(the_main_url)
 
 #Then extract all the nodes associated with this and rather than extracting them 
 the_facility_ids <- the_main_website %>% 
-  html_nodes('#content a') %>%    #Extract a list of html nodes taged with "content a"
+  html_nodes('#content a') %>%    #Extract a list of html nodes tagged with "content a"
   html_attr("href") %>%           #Pull the "href" attribute from the node
   str_split("/") %>%              #Split the html address into substrings, separated by "/"
   map_chr(.,9)                    #Extract the 9th item in the above, which is the facility ID
@@ -338,7 +334,7 @@ df_2020 <- bind_rows(dfs_2020)
 
 
 #Plot
-ggplot(df_2020,aes(y = Avg_Withdrawals_mgd, x=Facility_type)) +
+ggplot(df_2020,aes(y = Avg_Withdrawals_mgd, x=as.factor(Month))) +
   geom_boxplot()
 
 ```
@@ -348,7 +344,7 @@ ggplot(df_2020,aes(y = Avg_Withdrawals_mgd, x=Facility_type)) +
 To scrape for both years and sites, we need to dig deeper into Purrr's map functions. Most importantly we need to use the `cross2()` function to create a list of each unique combination of `year` and `facility_id.` We then use the `lift()` function to extract these elements in a way that can be easily mapped to our function. 
 
 ```{r}
-#Create a subset of facilities
+#Create a subset of facilities; want three years for each site
 the_facilities <- sample(the_facility_ids,3)
 the_years = c(2018,2019,2020)
 
